@@ -14,17 +14,20 @@ const websocketServer = new WebSocketServer({ port: WS_PORT });
 tcpServer.on("connection", (socket) => {
   console.log("TCP client connected");
 
-  socket.on("data", (msg) => {
+  socket.on("data", (msg: any) => {
     const message: string = msg.toString();
-
-    console.log(`Received: ${message}`);
+    const parsedMessage: VehicleData = JSON.parse(message);
     
-    // Send JSON over WS to frontend clients
-    websocketServer.clients.forEach(function each(client) {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
-      }
-    });
+    if (typeof parsedMessage.battery_temperature === "number") {
+      console.log(`Received: ${message}`);
+      // Send JSON over WS to frontend clients
+      console.log(typeof parsedMessage.battery_temperature);
+      websocketServer.clients.forEach(function each(client) {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(message);
+        }
+      });
+    }
   });
 
   socket.on("end", () => {
