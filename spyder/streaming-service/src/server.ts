@@ -10,6 +10,7 @@ const TCP_PORT = 12000;
 const WS_PORT = 8080;
 const tcpServer = net.createServer();
 const websocketServer = new WebSocketServer({ port: WS_PORT });
+let dangerous_temps: number[] = [];
 
 tcpServer.on("connection", (socket) => {
   console.log("TCP client connected");
@@ -17,11 +18,25 @@ tcpServer.on("connection", (socket) => {
   socket.on("data", (msg: any) => {
     const message: string = msg.toString();
     const parsedMessage: VehicleData = JSON.parse(message);
+    const battery_temperature = parsedMessage.battery_temperature;
+    const timestamp = parsedMessage.timestamp;
     
-    if (typeof parsedMessage.battery_temperature === "number") {
+    if (typeof battery_temperature === "number") {
       console.log(`Received: ${message}`);
+
+      if (battery_temperature < 20 || battery_temperature > 80) {
+        dangerous_temps.push(timestamp);        
+      }
+
+      dangerous_temps = dangerous_temps.filter(timestamp => Date.now() - timestamp <= 5000);
+
+      if (dangerous_temps.length > 3) {
+        console.log(`Current timestamp: ${timestamp}`);
+        console.log("Error: received battery temperature exceeds safe range more than 3 times in 5 seconds")
+        dangerous_temps.shift();
+      }
+
       // Send JSON over WS to frontend clients
-      console.log(typeof parsedMessage.battery_temperature);
       websocketServer.clients.forEach(function each(client) {
         if (client.readyState === WebSocket.OPEN) {
           client.send(message);
