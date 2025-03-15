@@ -23,11 +23,11 @@ I installed nodemon as a dev dependency in the ui directory through `npm install
 
 Running `docker compose up`, my first thought was that the incorrect format was of type `string` rather than a `number`. A closer look into the code in `battery_emulator` shows us that the number value was being converted to a binary string whenever it was less than the binary probability:
 
-`
+```
 battery_temperature: Math.random() < BINARY_PROBABILITY 
   ? Buffer.from(new Uint32Array([generated_value]).buffer).toString('binary')
   : generated_value,
-`
+```
 
 My guess on the purpose of this unnecessary-looking code is for some values to serve as 'invalid', get debugged, and filtered out (ignored), so I have just done that as opposed to converting it back to a `number`. My solution involves checking that the type of `battery_temperature` is `number` (i.e. it is valid) before sending data to the frontend.
 
