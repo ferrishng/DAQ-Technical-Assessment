@@ -11,6 +11,8 @@ RUN apt-get update && \
 
 COPY . .
 
+RUN git submodule update --init --recursive
+
 RUN find . -name "CMakeCache.txt" -delete
 
 RUN cd build/ && rm CMakeCache.txt || true

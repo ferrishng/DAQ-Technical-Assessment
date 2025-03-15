@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 3.22)
 
 project(firmware)
 
-add_subdirectory(solution)
+add_subdirectory(dbcppp)
+
+add_executable(main main.cpp)
+
+target_link_libraries(main PUBLIC dbcppp)
+
+target_include_directories(main PRIVATE dbcppp/include)
 
 add_custom_target(clean-all
     COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target clean
